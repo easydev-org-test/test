@@ -1,0 +1,32 @@
+name: ci
+
+# A MINIMAL WORKFLOW, and it exists for the e2e suite rather than for this repository.
+#
+# The CI tools (gh-run-list, gh-run-jobs, gh-run-log, gh-job-log, gh-run-cancel, gh-run-rerun,
+# gh-artifacts) need a repository WITH runs. Pointing them at the real project gave them runs and also
+# gave them other people's builds to cancel. This workflow gives the throwaway repository runs of its
+# own, so the suite is complete without touching anything it does not own.
+
+on:
+  push:
+  workflow_dispatch:
+  # A slow schedule is here so a repository that has not been pushed to recently still has a run to
+  # read: the tools are useless against an empty history.
+  schedule:
+    - cron: '17 3 * * *'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: say something
+        run: |
+          echo 'the e2e suite reads this log'
+          echo 'and this line too'
+      - name: upload something
+        run: echo 'artifact contents' > out.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: e2e-artifact
+          path: out.txt
